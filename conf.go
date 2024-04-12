@@ -59,7 +59,7 @@ func parse(ref reflect.Value) error {
 
 func set(key string, field reflect.Value, fieldT reflect.StructField) error {
 	var v any
-	var err error
+	err := fmt.Errorf("%w: %s", ErrInvalidType, key)
 
 	if key == "" {
 		return nil
@@ -142,8 +142,6 @@ func set(key string, field reflect.Value, fieldT reflect.StructField) error {
 		case reflect.Complex128:
 			v, err = env.Get[[]complex128](key)
 		}
-	default:
-		err = fmt.Errorf("%w: %s", ErrInvalidType, key)
 	}
 
 	if err != nil {
