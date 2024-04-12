@@ -1,4 +1,4 @@
 github.com/carlmjohnson/be v0.23.2 h1:1QjPnPJhwGUjsD9+7h98EQlKsxnG5TV+nnEvk0wnkls=
 github.com/carlmjohnson/be v0.23.2/go.mod h1:KAgPUh0HpzWYZZI+IABdo80wTgY43YhbdsiLYAaSI/Q=
-github.com/lucafmarques/env v1.1.2 h1:znvaamL5riLl9wnyjOW3DVDnd4u+3QfNJMTBByn1wOY=
-github.com/lucafmarques/env v1.1.2/go.mod h1:91dTMtYduZJIiurvhtiau6g7Z2+Iqr3ajn+V3WEdlYU=
+github.com/lucafmarques/env v1.2.0 h1:l46lpJKl4+6b9squKajUQkZ0KPLGZXVVyorzznEPWb0=
+github.com/lucafmarques/env v1.2.0/go.mod h1:91dTMtYduZJIiurvhtiau6g7Z2+Iqr3ajn+V3WEdlYU=
