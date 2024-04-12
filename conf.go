@@ -61,6 +61,10 @@ func set(key string, field reflect.Value, fieldT reflect.StructField) error {
 	var v any
 	var err error
 
+	if key == "" {
+		return nil
+	}
+
 	if tm := asTextUnmarshaler(field); tm != nil {
 		val, err := env.Get[string](key)
 		if err != nil {
