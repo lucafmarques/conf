@@ -12,7 +12,7 @@ import (
 var (
 	ErrInvalidType      = errors.New("invalid type")
 	ErrCantSetField     = errors.New("struct field can't be set")
-	ErrNotStructPointer = errors.New("argument must be pointer to struct")
+	ErrNotStructPointer = errors.New("cfg argument must be pointer to struct")
 )
 
 func Build(cfg any) error { return validate(cfg) }
@@ -37,18 +37,18 @@ func parse(ref reflect.Value) error {
 	for i := range refT.NumField() {
 		refF := ref.Field(i)
 		refFT := refT.Field(i)
+		key := refFT.Tag.Get("env")
 
 		if !refF.CanSet() {
-			errs = append(errs, ErrCantSetField)
+			errs = append(errs, fmt.Errorf("%w: %s", ErrCantSetField, key))
 			continue
 		}
-
-		if refF.Kind() == reflect.Struct {
+		if refF.Kind() == reflect.Struct && key == "" {
 			errs = append(errs, parse(refF))
 			continue
 		}
 
-		if err := set(refF, refFT); err != nil {
+		if err := set(key, refF, refFT); err != nil {
 			errs = append(errs, err)
 			continue
 		}
@@ -57,37 +57,111 @@ func parse(ref reflect.Value) error {
 	return errors.Join(errs...)
 }
 
-func set(field reflect.Value, fieldT reflect.StructField) error {
+func set(key string, field reflect.Value, fieldT reflect.StructField) error {
 	var v any
 	var err error
-	envN := fieldT.Tag.Get("env")
+
+	if tm := asTextUnmarshaler(field); tm != nil {
+		val, err := env.Get[string](key)
+		if err != nil {
+			return err
+		}
+
+		return tm.UnmarshalText([]byte(val))
+	}
 
 	switch fieldT.Type.Kind() {
 	case reflect.String:
-		v, err = env.Get[string](envN)
+		v, err = env.Get[string](key)
 	case reflect.Bool:
-		v, err = env.Get[bool](envN)
+		v, err = env.Get[bool](key)
 	case reflect.Int:
-		v, err = env.Get[int](envN)
+		v, err = env.Get[int](key)
+	case reflect.Int8:
+		v, err = env.Get[int8](key)
+	case reflect.Int16:
+		v, err = env.Get[int16](key)
+	case reflect.Int32:
+		v, err = env.Get[int32](key)
+	case reflect.Int64:
+		v, err = env.Get[int64](key)
+	case reflect.Uint:
+		v, err = env.Get[uint](key)
+	case reflect.Uint8:
+		v, err = env.Get[uint8](key)
+	case reflect.Uint16:
+		v, err = env.Get[uint16](key)
+	case reflect.Uint32:
+		v, err = env.Get[uint32](key)
+	case reflect.Uint64:
+		v, err = env.Get[uint64](key)
+	case reflect.Float32:
+		v, err = env.Get[float32](key)
 	case reflect.Float64:
-		v, err = env.Get[float64](envN)
+		v, err = env.Get[float64](key)
+	case reflect.Complex64:
+		v, err = env.Get[complex64](key)
+	case reflect.Complex128:
+		v, err = env.Get[complex128](key)
+	case reflect.Slice:
+		switch fieldT.Type.Elem().Kind() {
+		case reflect.String:
+			v, err = env.Get[[]string](key)
+		case reflect.Bool:
+			v, err = env.Get[[]bool](key)
+		case reflect.Int:
+			v, err = env.Get[[]int](key)
+		case reflect.Int8:
+			v, err = env.Get[[]int8](key)
+		case reflect.Int16:
+			v, err = env.Get[[]int16](key)
+		case reflect.Int32:
+			v, err = env.Get[[]int32](key)
+		case reflect.Int64:
+			v, err = env.Get[[]int64](key)
+		case reflect.Uint:
+			v, err = env.Get[[]uint](key)
+		case reflect.Uint8:
+			v, err = env.Get[[]uint8](key)
+		case reflect.Uint16:
+			v, err = env.Get[[]uint16](key)
+		case reflect.Uint32:
+			v, err = env.Get[[]uint32](key)
+		case reflect.Uint64:
+			v, err = env.Get[[]uint64](key)
+		case reflect.Float32:
+			v, err = env.Get[[]float32](key)
+		case reflect.Float64:
+			v, err = env.Get[[]float64](key)
+		case reflect.Complex64:
+			v, err = env.Get[[]complex64](key)
+		case reflect.Complex128:
+			v, err = env.Get[[]complex128](key)
+		}
 	default:
-		t, ok := field.Interface().(encoding.TextUnmarshaler)
-		if !ok {
-			return fmt.Errorf("%w: %s", ErrInvalidType, fieldT.Type.Name())
-		}
-		if v, err = env.Get[string](envN); err == nil {
-			err = t.UnmarshalText([]byte(v.(string)))
-		}
+		err = fmt.Errorf("%w: %s", ErrInvalidType, key)
 	}
 
 	if err != nil {
-		if errors.Is(err, env.ErrUnset) {
-			err = fmt.Errorf("%w: %s", err, envN)
-		}
 		return err
 	}
 
 	field.Set(reflect.ValueOf(v).Convert(fieldT.Type))
 	return nil
+}
+
+func asTextUnmarshaler(field reflect.Value) encoding.TextUnmarshaler {
+	if reflect.Pointer == field.Kind() {
+		if field.IsNil() {
+			field.Set(reflect.New(field.Type().Elem()))
+		}
+	} else if field.CanAddr() {
+		field = field.Addr()
+	}
+
+	tm, ok := field.Interface().(encoding.TextUnmarshaler)
+	if !ok {
+		return nil
+	}
+	return tm
 }
