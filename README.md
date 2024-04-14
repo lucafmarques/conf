@@ -15,7 +15,7 @@ go get github.com/lucafmarques/conf
 ```go
 package main
 
-import "github.com/lucafmarques/confg"
+import "github.com/lucafmarques/conf"
 
 type config struct {
 	URIs       []string  `env:"CONFIG_URIS"`
