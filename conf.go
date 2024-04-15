@@ -10,21 +10,25 @@ import (
 )
 
 var (
-	ErrInvalidType      = errors.New("invalid type")
-	ErrCantSetField     = errors.New("struct field can't be set")
-	ErrNotStructPointer = errors.New("cfg argument must be pointer to struct")
+	// ErrInvalidType represents a type that can't be parsed by conf.
+	ErrInvalidType = errors.New("invalid type")
+	// ErrCantSetField represents a failure setting a field, likely because it isn't exported.
+	ErrCantSetField = errors.New("struct field can't be set")
+	// ErrNotStructReference represents calling conf.Build with a struct instead of a reference to a struct.
+	ErrNotStructReference = errors.New("cfg argument must be a reference to a struct")
 )
 
+// Build attempts to build the cfg.
 func Build(cfg any) error { return validate(cfg) }
 
 func validate(v any) error {
 	ptrRef := reflect.ValueOf(v)
 	if ptrRef.Kind() != reflect.Pointer {
-		return ErrNotStructPointer
+		return ErrNotStructReference
 	}
 	ref := ptrRef.Elem()
 	if ref.Kind() != reflect.Struct {
-		return ErrNotStructPointer
+		return ErrNotStructReference
 	}
 
 	return parse(ref)
