@@ -1,4 +1,5 @@
 # `conf`: application configuration made simple 
+![Coverage](https://img.shields.io/badge/Coverage-100.0%25-brightgreen)
 ![coverage](https://img.shields.io/badge/coverage-100.0%25-brightgreen)
 [![Go Reference](https://pkg.go.dev/badge/github.com/lucafmarques/conf.svg)](https://pkg.go.dev/github.com/lucafmarques/conf)
 [![Go Report Card](https://goreportcard.com/badge/github.com/lucafmarques/conf)](https://goreportcard.com/report/github.com/lucafmarques/conf)
