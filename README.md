@@ -27,9 +27,9 @@ type config struct {
 }
 
 func main() {
-  cfg := &config{}
-  err := conf.Build(cfg)
-  // ...
+	cfg := &config{}
+	err := conf.Build(cfg)
+	// ...
 }
 ```
 ---
